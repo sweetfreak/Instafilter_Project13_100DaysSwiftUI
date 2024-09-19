@@ -5,15 +5,97 @@
 //  Created by Jesse Sheehan on 9/17/24.
 //
 
+import StoreKit
 import SwiftUI
-//import CoreImage
+//import PhotosUI //day 64
+//import CoreImage //day 62, 63
 //import CoreImage.CIFilterBuiltins
 
-struct ContentView: View {
+struct ContentView {
     var body: some View {
-            Text("Hello, World!")
+        Text("Hello, World!")
     }
 }
+
+
+//Day 64 - Request a Review from your User
+//NOTE: recommended to only request a review when you think the user has spent enough time in the app to review it.
+/*
+struct ContentView: View {
+    @Environment(\.requestReview) var requestReview
+    
+    var body: some View {
+        Button("Leave a review") {
+            requestReview()
+        }
+    }
+}
+*/
+
+//Day 64 - Share link (with a friend)
+/*
+struct ContentView: View {
+        
+    var body: some View {
+//        ShareLink(item: URL(string: "https://hackingwithswift.com")!, subject: Text("Learn Swift Here"), message: Text("Check out the 100 Days of SwiftUI")) {//optional label
+//            Label("Spread the word about swift", systemImage: "swift")
+//        }
+        let example = Image(.example)
+        ShareLink(item: example, preview: SharePreview("Zoe", image: example)) {
+            Label("Click to share", systemImage: "swift")
+        }
+    }
+}
+*/
+
+/*
+//DAY 64 - PhotosUI - let user choose photos and display them
+
+struct ContentView: View {
+    //single image is optional because it may not be there
+//    @State private var pickerItem: PhotosPickerItem?
+    @State private var pickerItems = [PhotosPickerItem]()
+//    @State private var selectedImage: Image?
+    @State private var selectedImages = [Image]()
+    
+    var body: some View {
+        
+        VStack {
+            PhotosPicker(/*"Select a picture",*/ selection: $pickerItems, maxSelectionCount: 5, matching: .any(of: [.images, .not(.screenshots)])) { // can be vague or specific regarding types of images.
+                Label("Select a picture", systemImage: "photo")
+            }
+            
+//            selectedImage?
+//                .resizable()
+//                .scaledToFit()
+            
+            ScrollView {
+                ForEach(0..<selectedImages.count, id: \.self) { i in
+                    selectedImages[i]
+                        .resizable()
+                        .scaledToFit()
+                }
+            }
+            
+            
+        }
+        .onChange(of: pickerItems) {
+            Task {
+                selectedImages.removeAll()
+                for item in pickerItems {
+                    if let loadedImage = try await item.loadTransferable(type: Image.self) {
+                        selectedImages.append(loadedImage)
+                    }
+                }
+                
+                //"try" because if user tried to load a video, it would fail!
+//                selectedImage = try await pickerItem?.loadTransferable(type: Image.self)
+            }
+        }
+    }
+    
+}
+ */
 
 
 //Day 63 - ContentUnvailableView
