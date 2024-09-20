@@ -5,16 +5,89 @@
 //  Created by Jesse Sheehan on 9/17/24.
 //
 
-import StoreKit
+//import StoreKit
 import SwiftUI
-//import PhotosUI //day 64
-//import CoreImage //day 62, 63
-//import CoreImage.CIFilterBuiltins
+import PhotosUI //day 64
+import CoreImage //day 62, 63
+import CoreImage.CIFilterBuiltins
 
-struct ContentView {
+struct ContentView: View {
+    
+    @State private var processedImage: Image?
+    @State private var filterIntensity = 0.5
+    @State private var selectedItem: PhotosPickerItem?
+    
+    @State private var currentFilter = CIFilter.sepiaTone()
+    let context = CIContext()
+    
     var body: some View {
-        Text("Hello, World!")
+        NavigationStack {
+            VStack {
+                Spacer()
+                
+                PhotosPicker(selection: $selectedItem) {
+                    
+                    if let processedImage {
+                        processedImage
+                            .resizable()
+                            .scaledToFit()
+                    } else {
+                        ContentUnavailableView("No picture", systemImage: "photo.badge.plus", description:Text("Tap to import a photo"))
+                    }
+                }
+                .buttonStyle(.plain)
+                .onChange(of: selectedItem, loadImage)
+                
+                Spacer()
+                
+                HStack {
+                    Text("Intensity")
+                    Slider(value: $filterIntensity)
+                        .onChange(of: filterIntensity, applyProcesssing)
+                }
+                
+                HStack {
+                    Button("Change Filter", action: changeFilter)
+                    
+                    Spacer()
+                    
+                    //Share the picture button
+                }
+            }
+            .padding([.horizontal, .bottom])
+            .navigationTitle("Instafilter")
+        }
     }
+    
+    func changeFilter() {
+        
+    }
+    
+    func loadImage() {
+        Task {
+            guard let imageData = try await selectedItem?.loadTransferable(type: Data.self) else { return }
+            
+            guard let inputImage = UIImage(data: imageData) else { return }
+            
+            //the following is not the easiest way, but it is the safest:
+            let beginImage = CIImage(image: inputImage)
+            currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
+            applyProcesssing()
+            
+        }
+    }
+    
+    func applyProcesssing() {
+        currentFilter.intensity = Float(filterIntensity)
+        
+        guard let outputImage = currentFilter.outputImage else { return }
+        guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return }
+        
+        let uiImage = UIImage(cgImage: cgImage)
+        processedImage = Image(uiImage: uiImage)
+        
+    }
+    
 }
 
 
